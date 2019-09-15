@@ -70,12 +70,6 @@ def message_display(text):
 
     time.sleep(2)
 
-    game_loop()
-
-
-
-
-
 def game_intro():
 
     intro = True
@@ -189,6 +183,27 @@ def draw2(level,width_card,temp):
                 pygame.draw.rect(screen, black, (x, 0, width_card, height), 5)
 
         x += width_card
+
+def choice(level,width_card,num,temp):
+    mouse = pygame.mouse.get_pos()
+    x=0
+    for i in range(level):
+        if i == (level - 1):
+            width_card_2 = width - x
+            if x + width_card > mouse[0] > x and height > mouse[1] > 0:
+                if COLORS[num]==temp[i]:
+                    del temp[i]
+        else:
+            if x + width_card > mouse[0] > x and height > mouse[1] > 0:
+                print(COLORS[num])
+                print(temp[i])
+                print(num)
+                if COLORS[num]==temp[i]:
+                    del temp[i]
+
+
+        x += width_card
+
 def game_loop(level):
     level //= 100
     level += 1
@@ -197,14 +212,20 @@ def game_loop(level):
     random.shuffle(COLORS)
     temp = []
     v=1
+    num=0
     while True:
         for event in pygame.event.get():
             #print(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            #if event.type == pygame.MOUSEBUTTONUP:
-                #correct_choice()
+            if event.type == pygame.MOUSEBUTTONUP:
+                t = len(temp)
+                choice(len(temp),width_card,num,temp)
+                if t > len(temp):
+                    num += 1
+                    print(num)
+
             if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         choose_difficulty()
@@ -217,9 +238,16 @@ def game_loop(level):
             pygame.display.update()
             time.sleep(5)
         else:
-            draw2(level,width_card,temp)
+            draw2(len(temp),width_card,temp)
+            pygame.display.update()
 
-        pygame.display.update()
+        if len(temp)>0:
+            width_card = width // len(temp)
+
+        if len(temp)==0:
+            screen.fill(white)
+            message_display("You won")
+            game_intro()
 
 
 
