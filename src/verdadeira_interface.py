@@ -209,16 +209,17 @@ def structure(difficulty):
         verificador = 0
     return D
 
-def draw1(level,width_card,temp,c):
+def draw1(level,width_card,temp,c,k):
     x=0
     for i in range(level):
         if i == (level - 1):
             width_card_2 = width - x
-            pygame.draw.rect(screen, c[i], (x, 0, width_card_2, height))
+            pygame.draw.rect(screen, c[i], (x, 0, width_card_2, height-30))
         else:
-            pygame.draw.rect(screen, c[i], (x, 0, width_card, height))
+            pygame.draw.rect(screen, c[i], (x, 0, width_card, height-30))
         x += width_card
-        temp.append(c[i])
+        if k == 0:
+            temp.append(c[i])
 
 def draw2(level,width_card,temp):
     x = 0
@@ -226,14 +227,14 @@ def draw2(level,width_card,temp):
     for i in range(level):
         if i == (level - 1):
             width_card_2 = width - x
-            pygame.draw.rect(screen, temp[i], (x, 0, width_card_2, height))
-            if x + width_card > mouse[0] > x and height > mouse[1] > 0:
-                pygame.draw.rect(screen, black, (x, 0, width_card_2, height), 5)
+            pygame.draw.rect(screen, temp[i], (x, 0, width_card_2, height-30))
+            if x + width_card > mouse[0] > x and height -20  > mouse[1] > 0:
+                pygame.draw.rect(screen, black, (x, 0, width_card_2, height-30), 5)
         else:
 
-            pygame.draw.rect(screen, temp[i], (x, 0, width_card, height))
-            if x + width_card > mouse[0] > x and height > mouse[1] > 0:
-                pygame.draw.rect(screen, black, (x, 0, width_card, height), 5)
+            pygame.draw.rect(screen, temp[i], (x, 0, width_card, height-30))
+            if x + width_card > mouse[0] > x and height -20  > mouse[1] > 0:
+                pygame.draw.rect(screen, black, (x, 0, width_card, height-30), 5)
 
         x += width_card
 
@@ -290,16 +291,29 @@ def game_loop(level):
 
         screen.fill(white)
         if v==1:
-            draw1(len(c),width_card,temp,c)
+            times = level
+            for q in range(level):
+                draw1(len(c),width_card,temp,c,q)
+                font = pygame.font.Font(None, 30)
+                t_time = font.render("Time: ", True, black)
+                text_time = font.render(str(times), True, black)
+                screen.blit(t_time, ((width/2-80), height - 20))
+                screen.blit(text_time, ((width/2), height - 20))
+                pygame.display.update()
+                screen.fill(white)
+                times -= 1
+                time.sleep(1)
             random.shuffle(temp)
-            v=0
-            pygame.display.update()
-            time.sleep(5)
-            
+            v = 0
         else:
             draw2(len(temp),width_card,temp)
-            pygame.display.update()
 
+        font = pygame.font.Font(None, 30)
+        t_life = font.render("Lifes: ", True, black)
+        text_life = font.render(str(life), True, black)
+        screen.blit(t_life,((width-150),height-20))
+        screen.blit(text_life, ((width - 80), height - 20))
+        pygame.display.update()
         if len(temp)>0:
             width_card = width // len(temp)
 
