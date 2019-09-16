@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import random
 import time
+
 pygame.init()
 (width, height) = (1000, 500)
 screen = pygame.display.set_mode((width, height))
@@ -121,7 +122,6 @@ def game_intro():
         pygame.display.update()
         clock.tick(25)
 
-
 def choose_difficulty():
     choosing=True
     while choosing :
@@ -144,10 +144,6 @@ def choose_difficulty():
         largeText = pygame.font.Font('freesansbold.ttf', 16)
         paint_button(largeText,black,red)
 
-
-
-
-
         largeText = pygame.font.Font('freesansbold.ttf', 80)
         TextSurf, TextRect = text_objects("Choose the difficulty", largeText,black)
         TextRect.center = ((width / 2), (height *0.2))
@@ -155,17 +151,74 @@ def choose_difficulty():
         pygame.display.update()
         clock.tick(30)
 
+def structure(difficulty):
+    A = []
+    D = []
+    verificador = 1
+    pipu = 0
+    # while difficulty > 0:
+    g = [[0] * difficulty for i in range(difficulty)]
+    count0 = [0] * difficulty
+    #while verificador == 1:
+        # generating random graph
+    for i in range(difficulty):
+        for j in range(5):
+            v1 = random.randint(0, difficulty - 1)
+            v2 = random.randint(0, difficulty - 1)
+            if v1 > v2:
+                g[v1][v2] = 1
+            elif v1 < v2:
+                g[v2][v1] = 1
 
-def draw1(level,width_card,temp):
+
+    for p in range(difficulty):
+        for z in range(difficulty):
+            if g[p][z]==1:
+                count0[z]+=1
+
+    # throwing initial vertexes with 0 count0 into lists
+    for i in range(difficulty):
+        if count0[i] == 0:
+            A.append(i)
+            D.append(i)
+            pipu += 1
+
+    i=0
+    while (len(A) != 0):
+        c = A[0]
+        i+=1
+        A.remove(c)
+
+        for o in range(difficulty):
+            if g[c][o] == 1:
+                count0[o] = count0[o] - 1
+                if count0[o] == 0:
+                    A.append(o)
+                    D.append(o)
+                    pipu += 1
+
+    if pipu != difficulty:
+        for u in range(difficulty):
+            count0[u] = 0
+            pipu = 0
+            for j in range(difficulty):
+                g[i][j] = 0
+        A.clear()
+        D.clear()
+    else:
+        verificador = 0
+    return D
+
+def draw1(level,width_card,temp,c):
     x=0
     for i in range(level):
         if i == (level - 1):
             width_card_2 = width - x
-            pygame.draw.rect(screen, COLORS[i], (x, 0, width_card_2, height))
+            pygame.draw.rect(screen, c[i], (x, 0, width_card_2, height))
         else:
-            pygame.draw.rect(screen, COLORS[i], (x, 0, width_card, height))
+            pygame.draw.rect(screen, c[i], (x, 0, width_card, height))
         x += width_card
-        temp.append(COLORS[i])
+        temp.append(c[i])
 
 def draw2(level,width_card,temp):
     x = 0
@@ -184,35 +237,40 @@ def draw2(level,width_card,temp):
 
         x += width_card
 
-def choice(level,width_card,num,temp):
+def choice(level,width_card,num,temp, c, life):
     mouse = pygame.mouse.get_pos()
     x=0
     for i in range(level):
         if i == (level - 1):
             width_card_2 = width - x
             if x + width_card > mouse[0] > x and height > mouse[1] > 0:
-                if COLORS[num]==temp[i]:
+                if c[num]==temp[i]:
                     del temp[i]
+                else:
+                    life -= 1
         else:
             if x + width_card > mouse[0] > x and height > mouse[1] > 0:
-                print(COLORS[num])
-                print(temp[i])
-                print(num)
-                if COLORS[num]==temp[i]:
+                if c[num]==temp[i]:
                     del temp[i]
-
-
+                else:
+                    life -= 1
         x += width_card
+    return life
 
 def game_loop(level):
     level //= 100
     level += 1
     level *= 5
     width_card = width // level
-    random.shuffle(COLORS)
     temp = []
     v=1
     num=0
+    D = structure(level)
+    c = []
+    life = (level // 3) + 1
+    random.shuffle(COLORS)
+    for a in D:
+        c.append(COLORS[a])
     while True:
         for event in pygame.event.get():
             #print(event)
@@ -221,10 +279,10 @@ def game_loop(level):
                 quit()
             if event.type == pygame.MOUSEBUTTONUP:
                 t = len(temp)
-                choice(len(temp),width_card,num,temp)
+                life = choice(len(temp),width_card,num,temp,c, life)
                 if t > len(temp):
                     num += 1
-                    print(num)
+                    # print(num)
 
             if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
@@ -232,11 +290,12 @@ def game_loop(level):
 
         screen.fill(white)
         if v==1:
-            draw1(level,width_card,temp)
+            draw1(len(c),width_card,temp,c)
             random.shuffle(temp)
             v=0
             pygame.display.update()
             time.sleep(5)
+            
         else:
             draw2(len(temp),width_card,temp)
             pygame.display.update()
@@ -247,6 +306,10 @@ def game_loop(level):
         if len(temp)==0:
             screen.fill(white)
             message_display("You won")
+            game_intro()
+        if not life:
+            screen.fill(white)
+            message_display("You lose :(")
             game_intro()
 
 
